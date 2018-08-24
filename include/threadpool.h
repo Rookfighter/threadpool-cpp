@@ -4,7 +4,7 @@
 
 #include <functional>
 #include <memory>
-#include "pool/blocking_queue.h"
+#include "blocking_queue.h"
 
 namespace pool
 {
@@ -57,7 +57,7 @@ namespace pool
                 return;
             keepRunning_ = true;
             thread_ = std::shared_ptr<std::thread>(new std::thread(
-                &ThreadPool::WorkerThread::run, this));
+                &WorkerThread::run, this));
         }
 
         void stop()
