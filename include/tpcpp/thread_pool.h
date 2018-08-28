@@ -54,7 +54,8 @@ namespace tp
 
         void wait()
         {
-            queue_.waiting(threads_.size());
+            while(!queue_.empty())
+                queue_.waiting(threads_.size());
         }
 
         void enqueue(const Task &task)
@@ -65,6 +66,11 @@ namespace tp
         void clear()
         {
             queue_.clear();
+        }
+
+        size_t size() const
+        {
+            return threads_.size();
         }
     };
 
