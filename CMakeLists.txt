@@ -13,6 +13,8 @@ if(CMAKE_COMPILER_IS_GNUCXX)
     set(CMAKE_CXX_FLAGS "-Wall -Wextra")
 endif(CMAKE_COMPILER_IS_GNUCXX)
 
+find_package(Threads)
+
 add_subdirectory(dep)
 
 include_directories(
@@ -25,3 +27,4 @@ install(DIRECTORY include/tpcpp DESTINATION include)
 # Compile tests
 file(GLOB TEST_SRC test/*.cpp)
 add_executable(run_tests ${TEST_SRC})
+target_link_libraries(run_tests ${CMAKE_THREAD_LIBS_INIT})
