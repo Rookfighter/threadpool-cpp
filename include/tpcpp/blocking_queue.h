@@ -5,14 +5,14 @@
  *      Author: Fabian Meyer
  */
 
-#ifndef POOL_BLOCKINGQUEUE_HPP_
-#define POOL_BLOCKINGQUEUE_HPP_
+#ifndef TPCPP_BLOCKING_QUEUE_HPP_
+#define TPCPP_BLOCKING_QUEUE_HPP_
 
-#include <queue>
+#include <deque>
 #include <mutex>
 #include <condition_variable>
 
-namespace pool
+namespace tp
 {
 
     template<class T>
@@ -20,15 +20,23 @@ namespace pool
     {
     private:
         size_t maxSize_;
-        std::queue<T> queue_;
+        size_t waiting_;
+        std::deque<T> queue_;
         std::mutex mutex_;
         std::condition_variable popCond_;
         std::condition_variable pushCond_;
+        std::condition_variable waitCond_;
 
-        bool isFull()
+        bool _full() const
         {
             return maxSize_ > 0 && queue_.size() >= static_cast<unsigned int>(maxSize_);
         }
+
+        bool _empty() const
+        {
+            return queue_.empty();
+        }
+
     public:
         BlockingQueue()
             : BlockingQueue(0)
@@ -36,7 +44,8 @@ namespace pool
         }
 
         BlockingQueue(const size_t maxSize)
-            : maxSize_(maxSize), queue_(), mutex_(), popCond_(), pushCond_()
+            : maxSize_(maxSize), waiting_(0), queue_(), mutex_(), popCond_(),
+            pushCond_(), waitCond_()
         {
         }
 
@@ -47,33 +56,55 @@ namespace pool
         bool full()
         {
             std::unique_lock<std::mutex> lock(mutex_);
-            return isFull();
+            return _full();
         }
 
         bool empty()
         {
             std::unique_lock<std::mutex> lock(mutex_);
-            return queue_.empty();
+            return _empty();
         }
 
         void push(T obj)
         {
             std::unique_lock<std::mutex> lock(mutex_);
-            while(isFull())
-                pushCond_.wait(lock);
-            queue_.push(obj);
+
+            pushCond_.wait(lock, [this](){return !this->_full();});
+
+            queue_.push_back(obj);
+
             popCond_.notify_one();
         }
 
         T pop()
         {
             std::unique_lock<std::mutex> lock(mutex_);
-            while(queue_.empty())
-                popCond_.wait(lock);
+
+            ++waiting_;
+            waitCond_.notify_one();
+
+            popCond_.wait(lock, [this](){return !this->_empty();});
+
             T result = queue_.front();
-            queue_.pop();
+            queue_.pop_front();
+
+            --waiting_;
+
             pushCond_.notify_one();
+
             return result;
+        }
+
+        void waiting(const size_t cnt)
+        {
+            std::unique_lock<std::mutex> lock(mutex_);
+            waitCond_.wait(lock, [this, cnt](){return this->waiting_ == cnt;});
+        }
+
+        void clear()
+        {
+            std::unique_lock<std::mutex> lock(mutex_);
+            queue_.clear();
         }
     };
 }
