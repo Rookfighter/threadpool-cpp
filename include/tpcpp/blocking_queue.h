@@ -85,20 +85,21 @@ namespace tp
 
             popCond_.wait(lock, [this](){return !this->_empty();});
 
+            --waiting_;
+
             T result = queue_.front();
             queue_.pop_front();
 
-            --waiting_;
 
             pushCond_.notify_one();
 
             return result;
         }
 
-        void waiting(const size_t cnt)
+        void wait(const size_t cnt)
         {
             std::unique_lock<std::mutex> lock(mutex_);
-            waitCond_.wait(lock, [this, cnt](){return this->waiting_ == cnt;});
+            waitCond_.wait(lock, [this, cnt](){return this->waiting_ >= cnt;});
         }
 
         void clear()

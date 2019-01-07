@@ -22,7 +22,7 @@ namespace tp
         ThreadPool(const size_t cnt = 2, const size_t maxWork = 0)
             : queue_(maxWork), threads_(cnt)
         {
-            for(unsigned int i = 0; i < cnt; ++i)
+            for(size_t i = 0; i < cnt; ++i)
                 threads_[i] = new WorkerThread(queue_);
         }
 
@@ -55,7 +55,7 @@ namespace tp
         void wait()
         {
             while(!queue_.empty())
-                queue_.waiting(threads_.size());
+                queue_.wait(threads_.size());
         }
 
         void enqueue(const Task &task)
