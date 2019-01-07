@@ -39,16 +39,14 @@ int main()
     pool.wait();
 
     // create some data to operate on
-    std::vector<double> data(8);
-    for(size_t i = 0; i < data.size(); ++i)
-        data[i] = static_cast<double>(i);
+    std::vector<double> data = {1, 2, 3, 4, 5, 6, 7, 8};
     // create a function that operates on the data and changes it in-place
     auto func = [](double &val){val *= val;};
     // execute the function on each element in parallel
     // foreach contains an implicit wait() call to ThreadPool
     tpool::foreach<double>(pool, func, data);
 
-    // we can do the same using indices
+    // we can do the same thing using indices
     auto func_idx = [&data](const size_t i){data[i] *= data[i];};
     tpool::forindex<size_t>(pool, func_idx, data.size());
 
