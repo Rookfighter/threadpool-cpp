@@ -22,7 +22,7 @@ include_directories(
     ${CATCH2_INCLUDE_DIR}
 )
 
-install(DIRECTORY include/tpcpp DESTINATION include)
+install(DIRECTORY include/tpool DESTINATION include)
 
 if(${BUILD_TESTS})
     # Compile tests
