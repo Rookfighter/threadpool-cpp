@@ -5,14 +5,14 @@
  *      Author: Fabian Meyer
  */
 
-#ifndef TPCPP_BLOCKING_QUEUE_HPP_
-#define TPCPP_BLOCKING_QUEUE_HPP_
+#ifndef TPOOL_BLOCKING_QUEUE_HPP_
+#define TPOOL_BLOCKING_QUEUE_HPP_
 
 #include <deque>
 #include <mutex>
 #include <condition_variable>
 
-namespace tp
+namespace tpool
 {
 
     template<class T>
@@ -20,7 +20,7 @@ namespace tp
     {
     private:
         size_t maxSize_;
-        size_t waiting_;
+        volatile size_t waiting_;
         std::deque<T> queue_;
         std::mutex mutex_;
         std::condition_variable popCond_;
@@ -99,7 +99,8 @@ namespace tp
         void wait(const size_t cnt)
         {
             std::unique_lock<std::mutex> lock(mutex_);
-            waitCond_.wait(lock, [this, cnt](){return this->waiting_ >= cnt;});
+            waitCond_.wait(lock, [this, cnt](){return this->_empty() &&
+                this->waiting_ >= cnt;});
         }
 
         void clear()

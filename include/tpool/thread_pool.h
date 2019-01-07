@@ -5,12 +5,12 @@
  *      Author: Fabian Meyer
  */
 
-#ifndef TPCPP_THREADPOOL_H_
-#define TPCPP_THREADPOOL_H_
+#ifndef TPOOL_THREADPOOL_H_
+#define TPOOL_THREADPOOL_H_
 
-#include "tpcpp/worker_thread.h"
+#include "tpool/worker_thread.h"
 
-namespace tp
+namespace tpool
 {
     class ThreadPool
     {
@@ -29,6 +29,9 @@ namespace tp
         ~ThreadPool()
         {
             stop();
+            join();
+            for(size_t i = 0; i < threads_.size(); ++i)
+                delete threads_[i];
         }
 
         void stop()
@@ -54,8 +57,7 @@ namespace tp
 
         void wait()
         {
-            while(!queue_.empty())
-                queue_.wait(threads_.size());
+            queue_.wait(threads_.size());
         }
 
         void enqueue(const Task &task)
@@ -73,6 +75,34 @@ namespace tp
             return threads_.size();
         }
     };
+
+    template<typename Item, typename List=std::vector<Item>>
+    void foreach(ThreadPool &pool,
+        const std::function<void(Item&)> &func,
+        List &list)
+    {
+        for(Item &item: list)
+            pool.enqueue(std::bind(func, std::ref(item)));
+        pool.wait();
+    }
+
+    template<typename Item, typename List=std::vector<Item>>
+    void foreach(ThreadPool &pool,
+        const std::function<void(const Item&)> &func,
+        const List &list)
+    {
+        for(const Item &item: list)
+            pool.enqueue(std::bind(func, std::cref(item)));
+        pool.wait();
+    }
+
+    template<typename Index=size_t>
+    void forindex(ThreadPool &pool, const std::function<void(const Index)> func, const Index cnt)
+    {
+        for(Index i = 0; i < cnt; ++i)
+            pool.enqueue(std::bind(func, i));
+        pool.wait();
+    }
 
 }
 

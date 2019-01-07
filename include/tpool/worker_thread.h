@@ -5,16 +5,17 @@
  *      Author: Fabian Meyer
  */
 
-#ifndef TPCPP_WORKER_THREAD_HPP_
-#define TPCPP_WORKER_THREAD_HPP_
+#ifndef TPOOL_WORKER_THREAD_HPP_
+#define TPOOL_WORKER_THREAD_HPP_
 
 #include <functional>
 #include <thread>
 #include <memory>
 #include <atomic>
-#include "tpcpp/blocking_queue.h"
+#include <iostream>
+#include "tpool/blocking_queue.h"
 
-namespace tp
+namespace tpool
 {
     typedef std::function<void(void)> Task;
     typedef BlockingQueue<Task> TaskQueue;
@@ -37,6 +38,11 @@ namespace tp
                     if(task)
                         task();
                 }
+                catch(const std::exception &e)
+                {
+                    std::cerr << "WorkerThread: uncaught exception '" <<
+                        e.what() << "'" << std::endl;
+                }
                 catch(...)
                 {
                     // ignore exceptions, is this wise?
@@ -52,7 +58,7 @@ namespace tp
 
         ~WorkerThread()
         {
-            stop();
+
         }
 
         void stop()
