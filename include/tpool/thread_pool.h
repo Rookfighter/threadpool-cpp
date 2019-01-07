@@ -44,7 +44,7 @@ namespace tpool
             clear();
 
             // push some dummy work for each worker thread
-            for(unsigned int i = 0; i < threads_.size(); ++i)
+            for(size_t i = 0; i < threads_.size(); ++i)
                 queue_.push([](){});
         }
 
