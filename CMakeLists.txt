@@ -24,7 +24,9 @@ include_directories(
 
 install(DIRECTORY include/tpcpp DESTINATION include)
 
-# Compile tests
-file(GLOB TEST_SRC test/*.cpp)
-add_executable(run_tests ${TEST_SRC})
-target_link_libraries(run_tests ${CMAKE_THREAD_LIBS_INIT})
+if(${BUILD_TESTS})
+    # Compile tests
+    file(GLOB TEST_SRC test/*.cpp)
+    add_executable(run_tests ${TEST_SRC})
+    target_link_libraries(run_tests ${CMAKE_THREAD_LIBS_INIT})
+endif(${BUILD_TESTS})
