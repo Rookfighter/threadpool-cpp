@@ -16,6 +16,7 @@
 #include <thread>
 #include <memory>
 #include <vector>
+#include <chrono>
 
 namespace tpcpp
 {
@@ -473,7 +474,7 @@ namespace tpcpp
     void waitAll(const WorkList &works)
     {
         for(Work::Ptr work : works)
-            work.wait();
+            work->wait();
     }
 
     // template<typename Item, typename List=std::vector<Item>>
