@@ -7,7 +7,7 @@ threadpool-cpp is a single header-only C++ library implementing thread pools for
 
 ## Install
 
-Simply copy the header file into your project or install them using
+Simply copy the header file into your project or install it using
 the CMake build system by typing
 
 ```bash
@@ -22,18 +22,19 @@ make install
 
 ```cpp
 #include <iostream>
-#include <tpool/thread_pool.h>
+#include <threadpool.h>
 
 int main()
 {
     // start a thread pool
-    // constructor allows to specify the amount of threads
+    // the constructor allows to specify the amount of threads
     tpool::ThreadPool pool(4);
 
-    // enqueue some tasks
-    for(size_t i = 0; i < 4; ++i)
-        pool.enqueue([i](){std::cout << "I got number " << i << std::endl;});
-    // wait until all tasks have been processed
+    // run some work items
+    for(size_t i = 0; i < 10; ++i)
+        pool.run([i](){std::cout << "I got number " << i << std::endl;});
+
+    // wait until all work items have been processed
     pool.wait();
 
     // create some data to operate on

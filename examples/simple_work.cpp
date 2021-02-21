@@ -1,41 +1,43 @@
-
-
-
-#include <threadpool.h>
 #include <iostream>
-#include <random>
+#include <threadpool.h>
 
 int main()
 {
-    tpcpp::ThreadPool pool;
-    std::vector<tpcpp::Work::Ptr> works(100);
+    // Start a new thread pool. This automatically starts its worker threads.
+    // Specify the amount of threads in the constructor.
+    // Omit the parameter to let the thread pool automatically detect a
+    // suitable number.
+    tpcpp::ThreadPool pool(4);
 
-    std::default_random_engine generator;
-    std::uniform_int_distribution<size_t> distribution(500, 2500);
+    std::cout << "Using " << pool.threads() << " threads" << std::endl;
 
-    std::cout << "Threads: " << pool.threads() << std::endl;
-
-    size_t sum = 0;
-    for(size_t i = 0; i < works.size(); ++i)
+    std::vector<tpcpp::Work::Ptr> workList(25);
+    // run some work items
+    for(size_t i = 0; i < workList.size(); ++i)
     {
-        auto sleepTime = distribution(generator);
-        sum += sleepTime;
-        works[i] = pool.run(
-            [i, sleepTime]()
-            {
-                std::this_thread::sleep_for (std::chrono::milliseconds(sleepTime));
-                std::cout << "Work " << i << std::endl;
-            });
+        // the run() method expects a functor with no return value and parameters
+        // it returns the created work item
+        // the work item can be used to track the execution state, like Completed, Errored, etc.
+        workList[i] = pool.run([i](){std::cout << "I got number " << i << std::endl;});
     }
 
-    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+    // wait for all tasks in the list to finish
+    tpcpp::waitAll(workList);
 
-    tpcpp::waitAll(works);
+    // create some data to operate on
+    std::vector<double> data = {1, 2, 3, 4, 5, 6, 7, 8};
 
-    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+    // create a function that operates on the data and changes it in-place
+    auto func = [](double &val){val *= val;};
 
-    std::cout << "Sum " << sum << "ms" << std::endl;
-    std::cout << "Took " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "ms" << std::endl;
+    // execute the function on each element in parallel
+    // foreach waits until the created tasks have finished
+    pool.foreach(func, data);
+
+    for(size_t i = 0; i < data.size(); ++i)
+        std::cout << data[i] << ", ";
+
+    std::cout << std::endl;
 
     return 0;
 }

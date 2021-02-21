@@ -255,6 +255,13 @@ namespace tpcpp
         }
     };
 
+    template<typename WorkList>
+    void waitAll(const WorkList &works)
+    {
+        for(Work::Ptr work : works)
+            work->wait();
+    }
+
 
     /** Definition of a blocking qeue containing work items. */
     typedef BlockingQueue<Work::Ptr> WorkQueue;
@@ -468,42 +475,21 @@ namespace tpcpp
         {
             return threads_.size();
         }
+
+        template<typename Func, typename DataList>
+        void foreach(const Func& func, DataList &data)
+        {
+            std::vector<Work::Ptr> works;
+
+            for(auto &d : data)
+            {
+                auto work = run([func, &d]() { func(d); });
+                works.push_back(work);
+            }
+
+            waitAll(works);
+        }
     };
-
-    template<typename WorkList>
-    void waitAll(const WorkList &works)
-    {
-        for(Work::Ptr work : works)
-            work->wait();
-    }
-
-    // template<typename Item, typename List=std::vector<Item>>
-    // void foreach(ThreadPool &pool,
-    //     const std::function<void(Item&)> &func,
-    //     List &list)
-    // {
-    //     for(Item &item: list)
-    //         pool.enqueue(std::bind(func, std::ref(item)));
-    //     pool.wait();
-    // }
-
-    // template<typename Item, typename List=std::vector<Item>>
-    // void foreach(ThreadPool &pool,
-    //     const std::function<void(const Item&)> &func,
-    //     const List &list)
-    // {
-    //     for(const Item &item: list)
-    //         pool.enqueue(std::bind(func, std::cref(item)));
-    //     pool.wait();
-    // }
-
-    // template<typename Index=size_t>
-    // void forindex(ThreadPool &pool, const std::function<void(const Index)> func, const Index cnt)
-    // {
-    //     for(Index i = 0; i < cnt; ++i)
-    //         pool.enqueue(std::bind(func, i));
-    //     pool.wait();
-    // }
 }
 
 
