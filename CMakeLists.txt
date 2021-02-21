@@ -1,11 +1,12 @@
 # CMakeLists.txt
 #
 #     Author: Fabian Meyer
-# Created On: 28 Aug 2018
+# Created On: 26 Dec 2015
+#    License: MIT
 
 cmake_minimum_required(VERSION 3.5)
-project(tpcpp)
 
+project(threadpool-cpp)
 SET(CMAKE_CXX_STANDARD 11)
 SET(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -13,20 +14,25 @@ if(CMAKE_COMPILER_IS_GNUCXX)
     set(CMAKE_CXX_FLAGS "-Wall -Wextra")
 endif(CMAKE_COMPILER_IS_GNUCXX)
 
-find_package(Threads)
+if (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
+    set(CMAKE_CXX_FLAGS "/WX /wd4530")
+endif(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
 
 add_subdirectory(dep)
 
 include_directories(
     include
-    ${CATCH2_INCLUDE_DIR}
 )
 
-install(DIRECTORY include/tpool DESTINATION include)
+install(
+    FILES "include/threadpoolcpp.h"
+    DESTINATION include
+)
 
 if(${BUILD_TESTS})
-    # Compile tests
-    file(GLOB TEST_SRC test/*.cpp)
-    add_executable(run_tests ${TEST_SRC})
-    target_link_libraries(run_tests ${CMAKE_THREAD_LIBS_INIT})
+    add_subdirectory(test)
 endif(${BUILD_TESTS})
+
+if(${BUILD_EXAMPLES})
+    add_subdirectory(examples)
+endif(${BUILD_EXAMPLES})
