@@ -2,6 +2,7 @@
 
 ![Cpp11](https://img.shields.io/badge/C%2B%2B-11-blue.svg)
 ![License](https://img.shields.io/packagist/l/doctrine/orm.svg)
+[![CMake]](https://github.com/Rookfighter/threadpool-cpp/actions/workflows/cmake.yml/badge.svg)
 
 `threadpool-cpp` is a single header-only C++ library implementing thread pools for C++11.
 
