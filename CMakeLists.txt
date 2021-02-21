@@ -18,6 +18,8 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
     set(CMAKE_CXX_FLAGS "/WX /wd4530")
 endif(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
 
+find_package(Threads REQUIRED)
+
 add_subdirectory(dep)
 
 include_directories(
@@ -25,7 +27,7 @@ include_directories(
 )
 
 install(
-    FILES "include/threadpoolcpp.h"
+    FILES "include/threadpool.h"
     DESTINATION include
 )
 
